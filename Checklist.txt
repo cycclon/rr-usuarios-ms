@@ -20,7 +20,7 @@ Rioja Recursos
     Crear archivo .gitignore - DONE
         Agregar node_modules
         Agregar .env si lo hubiese
-    Rama principal: Master
+    Rama principal: main
     Inicializar GIT
         > git init
 
