@@ -1,6 +1,6 @@
 {
   "name": "rr-usuarios-ms",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Microservicio de gestión de usuarios y autorizaciones para sistema \"Rioja Recursos\"",
   "main": "src/index.js",
   "scripts": {
