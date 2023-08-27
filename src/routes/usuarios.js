@@ -246,11 +246,6 @@ function generarTokenRefresco(usuario) {
   }, process.env.JWT_REFRESH)
 }
 
-// AUTENTICACIÓN BASADA EN TOKEN JWT
-router.post('/autenticar', autenticarToken, async (req, res) => {
-  return res.status(201).json({autorizado: true})
-})
-
 // OBTENER NUEVO TOKEN BASADO EN TOKEN DE REFRESCO
 router.post('/token', (req, res)=> {
   const tokenRefresco = req.body.tokenRefresco
