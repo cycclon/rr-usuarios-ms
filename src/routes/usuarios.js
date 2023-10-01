@@ -52,7 +52,7 @@ router.get('/', async (req, res)=>{
     const usuarios = await Usuario.find()
     res.json(usuarios)
   } catch (error) {
-    res.status(500).json({mensaje: error.message})
+    res.status(500).json({error: 2, mensaje: error.message})
   }
 })
 
@@ -77,7 +77,10 @@ router.post('/validarcontrasena/:nombre', obtenerUsuarioNombre, async (req, res)
     tokenAcceso = generarTokenAcceso(res.usuario)
   }
 
-  res.status(201).json({ validado: resultado, tokenAcceso: tokenAcceso })
+  res.status(201).json({ validado: resultado, 
+    tokenAcceso: tokenAcceso, 
+    idUsuario: res.usuario._id,
+    nivel: res.usuario.tipo })
 })
 
 // FUNCIÓN PARA VALIDAR EL NIVEL DE ACCESO DE UN USUARIO SOLICITANTE
@@ -105,12 +108,12 @@ router.post('/crearusuario', autenticarToken, async (req, res)=>{
   
   // VALIDAR CONTRASEÑA
   if(!contrasenaV.regEx.test(req.body.contrasena)){
-    return res.status(200).json({ mensaje: contrasenaV.mensajeError() }); 
+    return res.status(200).json({ error: 1, mensaje: contrasenaV.mensajeError() }); 
   }
 
   // VALIDAR NOMBRE DE USUARIO
   if(!nombreV.regEx.test(req.body.nombre)){
-    return res.status(200).json({ mensaje: nombreV.mensajeError() }); 
+    return res.status(200).json({ error: 1, mensaje: nombreV.mensajeError() }); 
   } 
 
   await hashContrasena(req.body.contrasena)
@@ -132,7 +135,7 @@ router.post('/crearusuario', autenticarToken, async (req, res)=>{
     const nuevoUsuario = await usuario.save()
     res.status(201).json(nuevoUsuario)
   } catch (error) {
-    res.status(400).json({ mensaje: error.message })
+    res.status(400).json({ error: 2, mensaje: error.message })
   }
 
   //return res.status(200).json({ mensaje: 'Usuario creado correctamente' })
@@ -150,7 +153,7 @@ router.post('/habilitacion/:nombre', autenticarToken, obtenerUsuarioNombre, asyn
     const usuarioActualizado = await res.usuario.save()
     return res.json(usuarioActualizado)
   } catch (error) {
-    return res.status(200).json({ mensaje: error.message })
+    return res.status(200).json({ error: 2, mensaje: error.message })
   }
 })
 
@@ -159,7 +162,7 @@ router.post('/cambiarcontrasena/:nombre', autenticarToken, obtenerUsuarioNombre,
   // VERIFICAR SI LA NUEVA CONTRASEÑA COINCIDE CON SU DUPLICADO
   const duplicado = req.body.nuevaContrasena === req.body.duplicadoNuevaContrasena
   if(!duplicado) {
-    return res.status(201).json({ mensaje: `La nueva contraseña y su duplicado no coinciden.` })
+    return res.status(201).json({ error: 1, mensaje: `La nueva contraseña y su duplicado no coinciden.` })
   }
   
   const resultado = await compararContrasena(req.body.contrasenaActual, res.usuario.contrasena)
@@ -171,10 +174,10 @@ router.post('/cambiarcontrasena/:nombre', autenticarToken, obtenerUsuarioNombre,
       const usuarioActualizado = await res.usuario.save()
       return res.json(usuarioActualizado)
     } catch (error) {
-      return res.status(200).json({ mensaje: error.message })
+      return res.status(200).json({ error: 2, mensaje: error.message })
     }
   } else {
-    return res.status(201).json({ mensaje: 'La contraseña actual es incorrecta' })
+    return res.status(201).json({ error: 1, mensaje: 'La contraseña actual es incorrecta' })
   }
 })
 
@@ -188,10 +191,10 @@ async function obtenerUsuarioNombre(req, res, next) {
     usuario = await Usuario.findOne({ nombre: req.params.nombre })
 
     if(usuario == null){
-      return res.status(404).json({ mensaje: 'No se pudo encontrar el usuario'})
+      return res.status(404).json({ error: 1, mensaje: 'No se pudo encontrar el usuario'})
     }    
   } catch (error) {
-    res.status(500).json({ mensaje: error.message })
+    res.status(500).json({ error: 2, mensaje: error.message })
   }
   res.usuario = usuario
   next()
@@ -202,7 +205,7 @@ async function obtenerUsuarioID(req, res, next) {
 
   // VALIDAR EL ID DE USUARIO  
   if(!esIDValida(req.params.id)) {    
-    return res.status(200).json({ mensaje: 'Parámetros inválidos'}); 
+    return res.status(200).json({ error: 1, mensaje: 'Parámetros inválidos'}); 
   }
 
   let usuario
@@ -211,7 +214,7 @@ async function obtenerUsuarioID(req, res, next) {
     
     usuario = await Usuario.findById(req.params.id)
     if(usuario == null){
-      return res.status(404).json({ mensaje: 'No se pudo encontrar el usuario'})
+      return res.status(404).json({ error: 1, mensaje: 'No se pudo encontrar el usuario'})
     }
   } catch (error) {
     res.status(500).json({ mensaje: error.message })
