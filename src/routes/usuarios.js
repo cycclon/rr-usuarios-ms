@@ -3,6 +3,7 @@ const router = express.Router()
 const Usuario = require('../models/usuario')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
+const CONTRASENA_DEFAULT = 'Password123'
 
 const nombreV = {
   permitido: 'Letras mayúsculas y minúsculas; números; guion bajo; guion medio, punto.', 
@@ -105,6 +106,9 @@ router.post('/crearusuario', autenticarToken, async (req, res)=>{
   // VALIDAR NIVEL DE ACCESO (2)
   const validacion = validarNivel(res.usuarioSolicitante, 2)
   if(!validacion.autorizado) return res.status(200).json(validacion);
+
+  // SI LA CONTRASENA ESTA EN BLANCO, USAR CONTRASENA POR DEFECTO
+  if(req.body.contrasena === '' ) req.body.contrasena = CONTRASENA_DEFAULT
   
   // VALIDAR CONTRASEÑA
   if(!contrasenaV.regEx.test(req.body.contrasena)){
