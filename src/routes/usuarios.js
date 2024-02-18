@@ -108,19 +108,22 @@ router.post('/crearusuario', autenticarToken, async (req, res)=>{
   if(!validacion.autorizado) return res.status(200).json(validacion);
 
   // SI LA CONTRASENA ESTA EN BLANCO, USAR CONTRASENA POR DEFECTO
-  if(req.body.contrasena === '' ) req.body.contrasena = CONTRASENA_DEFAULT
+  if(req.body.contrasena !== '' ) {
+    // VALIDAR CONTRASEÑA
+    if(!contrasenaV.regEx.test(req.body.contrasena)){
+      return res.status(200).json({ error: 1, mensaje: contrasenaV.mensajeError() }); 
+    }
+  } 
   
-  // VALIDAR CONTRASEÑA
-  if(!contrasenaV.regEx.test(req.body.contrasena)){
-    return res.status(200).json({ error: 1, mensaje: contrasenaV.mensajeError() }); 
-  }
-
   // VALIDAR NOMBRE DE USUARIO
   if(!nombreV.regEx.test(req.body.nombre)){
     return res.status(200).json({ error: 1, mensaje: nombreV.mensajeError() }); 
   } 
 
-  await hashContrasena(req.body.contrasena)
+  // SI LA CONTRASENA ESTA EN BLANCO, USAR CONTRASENA POR DEFECTO
+  if(req.body.contrasena === '' ) {
+    hashContrasena(CONTRASENA_DEFAULT)
+  } else await hashContrasena(req.body.contrasena)
   
   const usuario = new Usuario({
     nombre: req.body.nombre,
@@ -139,7 +142,7 @@ router.post('/crearusuario', autenticarToken, async (req, res)=>{
     const nuevoUsuario = await usuario.save()
     res.status(201).json(nuevoUsuario)
   } catch (error) {
-    res.status(400).json({ error: 2, mensaje: error.message })
+    res.status(200).json({ error: 2, mensaje: error.message })
   }
 
   //return res.status(200).json({ mensaje: 'Usuario creado correctamente' })
@@ -198,7 +201,7 @@ async function obtenerUsuarioNombre(req, res, next) {
       return res.status(404).json({ error: 1, mensaje: 'No se pudo encontrar el usuario'})
     }    
   } catch (error) {
-    res.status(500).json({ error: 2, mensaje: error.message })
+    res.status(200).json({ error: 2, mensaje: error.message })
   }
   res.usuario = usuario
   next()
@@ -221,7 +224,7 @@ async function obtenerUsuarioID(req, res, next) {
       return res.status(404).json({ error: 1, mensaje: 'No se pudo encontrar el usuario'})
     }
   } catch (error) {
-    res.status(500).json({ mensaje: error.message })
+    res.status(200).json({ mensaje: error.message })
   }
 
   res.usuario = usuario
